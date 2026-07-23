@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATS CV Maker - Buat CV Profesional</title>
+  <meta name="description" content="Buat CV ATS-friendly profesional dengan mudah. Pilih template, sesuaikan warna, dan download dalam format Word atau PDF." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+<body>
+  <!-- HEADER APP -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <span class="logo-text">ATS <strong>CV Maker</strong></span>
+      </div>
+      <div class="cv-name-input-container">
+        <input type="text" id="cvDocName" placeholder="Nama Dokumen CV (contoh: CV Marketing Budi)" value="CV Baru Saya" oninput="saveCurrentCVLocalState()" />
+        <button class="btn-save-local" onclick="saveCVToList()">💾 Simpan</button>
+      </div>
+      <div class="header-actions">
+        <button class="btn-help-header" onclick="showHelpModal()" title="Lihat Panduan & Info Aplikasi">💡 Info &amp; Panduan</button>
+        <button class="btn-export btn-word" id="btnExportWord" onclick="exportWord()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Export Word
+        </button>
+        <button class="btn-export btn-pdf" id="btnExportPdf" onclick="exportPDF()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Export PDF
+        </button>
+        <button class="btn-donate-header" id="btnDonate" onclick="showDonationModal()" title="Dukung pengembangan gratis ini">
+          ☕ Donasi
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <div class="app-layout">
+    <!-- SIDEBAR EDITOR -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- SAVED CV LIST -->
+      <div class="panel" id="panelSavedList">
+        <div class="panel-header" onclick="togglePanel('panelSavedList')">
+          <span>📁 CV Tersimpan &amp; Riwayat</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="panel-body">
+          <div class="form-group" style="margin-bottom: 8px;">
+            <input type="text" id="searchSavedCV" placeholder="Cari CV tersimpan..." oninput="renderSavedCVList()" />
+          </div>
+          <div class="saved-cv-container" id="savedCVList">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TEMPLATE SELECTOR -->
+      <div class="panel" id="panelTemplate">
+        <div class="panel-header" onclick="togglePanel('panelTemplate')">
+          <span>🎨 Template &amp; Warna</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="panel-body">
+          <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <button onclick="resetCVToDefault()" style="flex: 1; padding: 8px; font-size: 11px; font-weight: 600; border: 1px solid var(--accent); background: var(--accent-light); color: var(--accent); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: all var(--transition);" title="Isi semua form dengan data contoh yang rapi">✨ Gunakan Data Contoh</button>
+            <button onclick="clearAllInputs()" style="flex: 1; padding: 8px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: all var(--transition);" title="Kosongkan seluruh isian form untuk mulai menulis dari nol">🧹 Mulai dari Kosong</button>
+          </div>
+          <div class="template-grid">
+            <div class="template-card active" data-template="classic" onclick="setTemplate('classic')">
+              <div class="tpl-preview tpl-classic">
+                <div class="tp-bar"></div>
+                <div class="tp-lines"><div></div><div></div><div></div></div>
+              </div>
+              <span>Classic</span>
+            </div>
+            <div class="template-card" data-template="modern" onclick="setTemplate('modern')">
+              <div class="tpl-preview tpl-modern">
+                <div class="tp-sidebar"></div>
+                <div class="tp-content"><div></div><div></div><div></div></div>
+              </div>
+              <span>Modern</span>
+            </div>
+            <div class="template-card" data-template="minimal" onclick="setTemplate('minimal')">
+              <div class="tpl-preview tpl-minimal">
+                <div class="tp-top"></div>
+                <div class="tp-lines"><div></div><div></div><div></div></div>
+              </div>
+              <span>Minimal</span>
+            </div>
+            <div class="template-card" data-template="executive" onclick="setTemplate('executive')">
+              <div class="tpl-preview tpl-executive">
+                <div class="tp-header"></div>
+                <div class="tp-body"><div class="tp-col"></div><div class="tp-col"></div></div>
+              </div>
+              <span>Executive</span>
+            </div>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin: 12px 0 6px 0;">
+            <input type="checkbox" id="showPhotoToggle" checked onchange="togglePhotoDisplay(this.checked)" style="width: auto; cursor: pointer;" />
+            <label for="showPhotoToggle" style="margin: 0; cursor: pointer; text-transform: none; font-size: 12px; color: var(--text-primary)">Tampilkan Foto Profil</label>
+          </div>
+
+          <div id="photoSettingsGroup" style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <div style="flex: 1;">
+              <label style="font-size: 11px; text-transform: none; color: var(--text-secondary); margin-bottom: 2px;">Bentuk Foto</label>
+              <select id="photoShapeSelect" onchange="changePhotoShape(this.value)" style="padding: 4px 8px; font-size: 11px;">
+                <option value="round" selected>Bulat</option>
+                <option value="square">Kotak</option>
+                <option value="rounded-square">Kotak Melengkung</option>
+              </select>
+            </div>
+            <div style="flex: 1;">
+              <label style="font-size: 11px; text-transform: none; color: var(--text-secondary); margin-bottom: 2px;">Rasio Pas Foto</label>
+              <select id="photoRatioSelect" onchange="changePhotoRatio(this.value)" style="padding: 4px 8px; font-size: 11px;">
+                <option value="1:1" selected>Persegi 1:1</option>
+                <option value="3:4">Pas Foto 3x4</option>
+                <option value="4:6">Pas Foto 4x6</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin: 12px 0 0 0;">
+            <input type="checkbox" id="showSkillLevelToggle" checked onchange="toggleSkillLevelDisplay(this.checked)" style="width: auto; cursor: pointer;" />
+            <label for="showSkillLevelToggle" style="margin: 0; cursor: pointer; text-transform: none; font-size: 12px; color: var(--text-primary)" title="Jika dicentang, tingkatan/level keahlian seperti (Advanced, Intermediate) akan ditampilkan di samping nama keahlian">Tampilkan Level Keahlian (Advanced/dll)</label>
+          </div>
+
+          <div class="form-group" style="margin-top: 12px;">
+            <label style="font-size: 11px; text-transform: none; color: var(--text-secondary); margin-bottom: 2px;">Layout Baris Kontak</label>
+            <select id="contactLayoutSelect" onchange="changeContactLayout(this.value)" style="padding: 4px 8px; font-size: 11px; width: 100%;">
+              <option value="horizontal" selected>Horizontal (Sejajar ke Kanan)</option>
+              <option value="vertical">Vertikal (Ditumpuk ke Bawah)</option>
+              <option value="grid">2 Kolom (Kiri-Kanan)</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin: 12px 0 0 0;">
+            <input type="checkbox" id="autoSaveToggle" checked style="width: auto; cursor: pointer;" />
+            <label for="autoSaveToggle" style="margin: 0; pointer-events: none; text-transform: none; font-size: 12px; color: var(--text-primary)" title="Jika dicentang, CV akan otomatis disimpan ke riwayat lokal saat diekspor">Simpan ke Riwayat Saat Ekspor</label>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label class="color-label">Bahasa Judul CV (Headers)</label>
+            <select id="cvLanguageSelect" onchange="changeCVLanguage(this.value)" style="margin-top: 4px;">
+              <option value="id">Bahasa Indonesia</option>
+              <option value="en" selected>English</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <label class="color-label">Jenis Font CV (ATS Friendly)</label>
+            <select id="cvFontSelect" onchange="changeCVFont(this.value)" style="margin-top: 4px;">
+              <option value="Arial" selected>Arial (Sans Serif - Bersih &amp; Universal)</option>
+              <option value="Calibri">Calibri (Sans Serif - Modern &amp; Standar MS Word)</option>
+              <option value="Times New Roman">Times New Roman (Serif - Klasik &amp; Formal)</option>
+              <option value="Georgia">Georgia (Serif - Sangat Jelas &amp; Elegan)</option>
+              <option value="Garamond">Garamond (Serif - Hemat Ruang &amp; Padat)</option>
+              <option value="Inter">Inter (Sans Serif - Digital &amp; Modern)</option>
+            </select>
+          </div>
+
+          <div class="color-section">
+            <label class="color-label">Warna Aksen</label>
+            <div class="color-presets">
+              <div class="color-dot active" style="background:#2c5f8a" data-color="#2c5f8a" onclick="setColor('#2c5f8a', this)"></div>
+              <div class="color-dot" style="background:#1a5276" data-color="#1a5276" onclick="setColor('#1a5276', this)"></div>
+              <div class="color-dot" style="background:#0d6e5b" data-color="#0d6e5b" onclick="setColor('#0d6e5b', this)"></div>
+              <div class="color-dot" style="background:#6c3483" data-color="#6c3483" onclick="setColor('#6c3483', this)"></div>
+              <div class="color-dot" style="background:#c0392b" data-color="#c0392b" onclick="setColor('#c0392b', this)"></div>
+              <div class="color-dot" style="background:#d35400" data-color="#d35400" onclick="setColor('#d35400', this)"></div>
+              <div class="color-dot" style="background:#1a252f" data-color="#1a252f" onclick="setColor('#1a252f', this)"></div>
+              <div class="color-dot custom-color-dot" title="Custom color">
+                <input type="color" id="customColor" value="#2c5f8a" onchange="setColor(this.value, null)" />
+                <span>+</span>
+              </div>
+            </div>
+
+            <label class="color-label" style="margin-top:12px">Warna Teks Nama</label>
+            <div class="color-presets">
+              <div class="color-dot name-dot active" style="background:#1a252f" data-color="#1a252f" onclick="setNameColor('#1a252f', this)"></div>
+              <div class="color-dot name-dot" style="background:#2c5f8a" data-color="#2c5f8a" onclick="setNameColor('#2c5f8a', this)"></div>
+              <div class="color-dot name-dot" style="background:#0d6e5b" data-color="#0d6e5b" onclick="setNameColor('#0d6e5b', this)"></div>
+              <div class="color-dot name-dot" style="background:#ffffff; border:2px solid #ccc" data-color="#ffffff" onclick="setNameColor('#ffffff', this)"></div>
+              <div class="color-dot name-dot" style="background:#6c3483" data-color="#6c3483" onclick="setNameColor('#6c3483', this)"></div>
+              <div class="color-dot custom-color-dot" title="Custom name color">
+                <input type="color" id="customNameColor" value="#1a252f" onchange="setNameColor(this.value, null)" />
+                <span>+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERSONAL INFO -->
+      <div class="panel" id="panelPersonal">
+        <div class="panel-header" onclick="togglePanel('panelPersonal')">
+          <span>👤 Data Pribadi</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="panel-body">
+          <div class="photo-upload-area" id="sidebarPhotoArea" onclick="document.getElementById('photoInput').click()">
+            <img id="photoPreview" src="" alt="Photo" style="display:none" />
+            <div class="photo-placeholder" id="photoPlaceholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              <span>Upload Foto</span>
+            </div>
+            <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(event)" style="display:none" />
+          </div>
+          <div class="form-group"><label>Nama Lengkap</label><input type="text" id="inName" placeholder="NAMA LENGKAP" oninput="updateCV()" /></div>
+          <div class="form-group">
+            <label>Jabatan / Profesi (Maksimal 3)</label>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <input type="text" id="inTitle1" placeholder="Jabatan 1 (contoh: Human Resource)" oninput="updateCV()" />
+              <input type="text" id="inTitle2" placeholder="Jabatan 2 (contoh: Tenant Relations)" oninput="updateCV()" />
+              <input type="text" id="inTitle3" placeholder="Jabatan 3 (contoh: Customer Service)" oninput="updateCV()" />
+            </div>
+          </div>
+          <div class="form-group"><label>Email</label><input type="email" id="inEmail" placeholder="email@example.com" oninput="updateCV()" /></div>
+          <div class="form-group"><label>No. Telepon</label><input type="tel" id="inPhone" placeholder="+62 812 3456 7890" oninput="updateCV()" /></div>
+          <div class="form-group"><label>Website/LinkedIn</label><input type="text" id="inWebsite" placeholder="linkedin.com/in/username" oninput="updateCV()" /></div>
+          <div class="form-group"><label>Link Portofolio</label><input type="text" id="inPortfolio" placeholder="github.com/username atau behance.net/username" oninput="updateCV()" /></div>
+          <div class="form-group"><label>Lokasi</label><input type="text" id="inLocation" placeholder="Jakarta, Indonesia" oninput="updateCV()" /></div>
+          <div class="form-group"><label>Ringkasan Profil</label><textarea id="inSummary" rows="4" placeholder="Tulis ringkasan profesional Anda di sini..." oninput="updateCV()"></textarea></div>
+        </div>
+      </div>
+
+      <!-- EXPERIENCE -->
+      <div class="panel" id="panelExp">
+        <div class="panel-header" onclick="togglePanel('panelExp')">
+          <span>💼 Pengalaman Kerja</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="panel-body">
+          <div id="expList"></div>
+          <button class="btn-add" onclick="addExperience()">+ Tambah Pengalaman</button>
+        </div>
+      </div>
+
+      <!-- EDUCATION -->
+      <div class="panel" id="panelEdu">
+        <div class="panel-header" onclick="togglePanel('panelEdu')">
+          <span>🎓 Pendidikan</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="panel-body">
+          <div id="eduList"></div>
+          <button class="btn-add" onclick="addEducation()">+ Tambah Pendidikan</button>
+        </div>
+      </div>
+
+      <!-- HARD SKILLS -->
+      <div class="panel" id="panelHardSkills">
+        <div class="panel-header" onclick="togglePanel('panelHardSkills')">
+          <span>🛠️ Hard Skills</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="panel-body">
+          <div class="skills-bulk-actions" style="margin-bottom: 10px; display: flex; gap: 8px;">
+            <button class="btn-secondary" style="flex: 1;" onclick="setAllHardSkillsLevel('Intermediate')">Tampilkan Semua Level</button>
+            <button class="btn-secondary" style="flex: 1;" onclick="setAllHardSkillsLevel('Hide')">Sembunyikan Semua Level</button>
+          </div>
+          <div id="hardSkillsList"></div>
+          <button class="btn-add" onclick="addHardSkill()">+ Tambah Hard Skill</button>
+        </div>
+      </div>
+
+      <!-- SOFT SKILLS -->
+      <div class="panel" id="panelSoftSkills">
+        <div class="panel-header" onclick="togglePanel('panelSoftSkills')">
+          <span>🤝 Soft Skills</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="panel-body">
+          <div class="skills-bulk-actions" style="margin-bottom: 10px; display: flex; gap: 8px;">
+            <button class="btn-secondary" style="flex: 1;" onclick="setAllSoftSkillsLevel('Intermediate')">Tampilkan Semua Level</button>
+            <button class="btn-secondary" style="flex: 1;" onclick="setAllSoftSkillsLevel('Hide')">Sembunyikan Semua Level</button>
+          </div>
+          <div id="softSkillsList"></div>
+          <button class="btn-add" onclick="addSoftSkill()">+ Tambah Soft Skill</button>
+        </div>
+      </div>
+
+      <!-- LANGUAGES -->
+      <div class="panel" id="panelLang">
+        <div class="panel-header" onclick="togglePanel('panelLang')">
+          <span>🌐 Bahasa</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="panel-body">
+          <div id="langList"></div>
+          <button class="btn-add" onclick="addLanguage()">+ Tambah Bahasa</button>
+        </div>
+      </div>
+
+      <!-- CERTIFICATIONS -->
+      <div class="panel" id="panelCert">
+        <div class="panel-header" onclick="togglePanel('panelCert')">
+          <span>🏆 Sertifikasi</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="panel-body">
+          <div id="certList"></div>
+          <button class="btn-add" onclick="addCertification()">+ Tambah Sertifikasi</button>
+        </div>
+      </div>
+
+    </aside>
+    
+    <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+
+    <!-- CV PREVIEW AREA -->
+    <main class="preview-area">
+      <div class="preview-toolbar">
+        <span class="preview-label">📄 Preview CV</span>
+        <div class="zoom-controls">
+          <button onclick="adjustZoom(-0.1)" title="Zoom Out">−</button>
+          <span id="zoomLevel">100%</span>
+          <button onclick="adjustZoom(0.1)" title="Zoom In">+</button>
+          <button onclick="resetZoom()" style="font-size:11px;padding:4px 8px">Reset</button>
+        </div>
+      </div>
+      <div class="preview-scroll">
+        <div class="cv-paper-wrapper" id="cvPaperWrapper">
+          <div class="cv-paper" id="cvPreview">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- WELCOME MODAL -->
+  <div class="welcome-modal-overlay" id="welcomeModal">
+    <div class="welcome-modal-card">
+      <div class="welcome-modal-header">
+        <h2>Selamat Datang di ATS CV Maker! 🚀</h2>
+        <p>Aplikasi pembuat CV (Curriculum Vitae) ATS-Friendly profesional dengan kustomisasi instan, cepat, dan 100% aman.</p>
+      </div>
+      <div class="welcome-modal-body">
+        <h3>💡 Apa saja fitur & keunggulan kami?</h3>
+        <div class="features-grid">
+          <div class="feature-item">
+            <span class="feature-icon">🎨</span>
+            <div>
+              <strong>Kustomisasi Instan</strong>
+              <p>4 pilihan template ATS-Ready (Classic, Modern, Minimal, Executive), bebas ubah warna aksen & nama.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🖼️</span>
+            <div>
+              <strong>Kontrol Foto Profil</strong>
+              <p>Atur bentuk bulat/kotak serta rasio pas foto formal terlengkap (1:1, 3x4, & 4x6).</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📞</span>
+            <div>
+              <strong>Tata Letak Kontak</strong>
+              <p>Susun info kontak secara Horizontal, Vertikal, maupun 2 Kolom (Grid) rata kiri rapi.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🛡️</span>
+            <div>
+              <strong>Aman & Offline-First</strong>
+              <p>Data draf CV tersimpan otomatis secara offline di memori lokal browser Anda (localStorage).</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📂</span>
+            <div>
+              <strong>LinkedIn & Portofolio</strong>
+              <p>Input link portofolio dan LinkedIn terintegrasi dengan ikon grafis yang sesuai.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📄</span>
+            <div>
+              <strong>Ekspor Word & PDF</strong>
+              <p>Unduh hasil akhir CV dalam format PDF atau Word (.docx) siap edit di Microsoft Word.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="welcome-modal-footer">
+        <button class="btn-modal btn-modal-primary" onclick="closeWelcomeModal(true)">✨ Gunakan Data Contoh</button>
+        <button class="btn-modal btn-modal-secondary" onclick="closeWelcomeModal(false)">✍️ Mulai Tulis CV Baru</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast"></div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.js"></script>
+  <script src="app.js?v=2"></script>
+</body>
+</html>
