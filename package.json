@@ -1,0 +1,24 @@
+{
+  "name": "cv-ats-maker",
+  "version": "1.0.0",
+  "description": "Buat CV ATS-Friendly profesional secara gratis, cepat, dan 100% offline-first.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npx live-server .",
+    "test": "echo \"No tests configured\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/callmencah/cv-ats-maker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/callmencah/cv-ats-maker/issues"
+  },
+  "homepage": "https://github.com/callmencah/cv-ats-maker#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
