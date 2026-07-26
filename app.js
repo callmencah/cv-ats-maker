@@ -311,9 +311,33 @@ function setTemplate(template) {
       card.classList.add("active");
     }
   });
+
+  // Clean template: hide photo area entirely (layout doesn't support it)
+  const photoToggle = document.getElementById("showPhotoToggle");
+  const photoSettingsGroup = document.getElementById("photoSettingsGroup");
+  const photoArea = document.getElementById("sidebarPhotoArea");
+  const photoToggleRow = photoToggle ? photoToggle.closest(".form-group") || photoToggle.parentElement : null;
+
+  if (template === "clean") {
+    if (photoArea) photoArea.style.display = "none";
+    if (photoToggle) { photoToggle.checked = false; photoToggle.disabled = true; }
+    if (photoToggleRow) photoToggleRow.style.display = "none";
+    if (photoSettingsGroup) photoSettingsGroup.style.display = "none";
+    showPhoto = false;
+  } else {
+    if (photoArea) photoArea.style.display = "block";
+    if (photoToggle) { photoToggle.disabled = false; }
+    if (photoToggleRow) photoToggleRow.style.display = "flex";  // restore inline flex
+    const wasChecked = photoToggle ? photoToggle.checked : true;
+    showPhoto = wasChecked;
+    if (photoSettingsGroup) photoSettingsGroup.style.display = wasChecked ? "flex" : "none";
+  }
+
+
   saveCurrentCVLocalState();
   updateCV();
 }
+
 
 // Handle photo upload
 function handlePhoto(event) {
@@ -886,6 +910,8 @@ function renderPreview() {
     html = renderMinimalHTML();
   } else if (currentTemplate === "executive") {
     html = renderExecutiveHTML();
+  } else if (currentTemplate === "clean") {
+    html = renderCleanHTML();
   }
   
   cvPreview.innerHTML = html;
@@ -1353,6 +1379,129 @@ function renderExecutiveHTML() {
 }
 
 
+// RENDER CLEAN (Centered header, black underline sections — like Michael Harris style)
+function renderCleanHTML() {
+  const hs = cvData.hardSkills || [];
+  const ss = cvData.softSkills || [];
+  const t = translations[cvLanguage];
+
+  // Build title line
+  const titles = [cvData.title1, cvData.title2, cvData.title3].filter(Boolean);
+  const titleLine = titles.join(' | ');
+
+  // Build contact line items
+  const contactItems = [
+    cvData.location,
+    cvData.email,
+    cvData.phone ? `+${cvData.phone.replace(/^\+/, '')}` : null,
+    cvData.website
+  ].filter(Boolean);
+
+  // Skills — flat bullet list, one per line
+  const allSkills = [
+    ...hs.map(s => s.name + (showSkillLevel && s.level !== 'Hide' ? ` (${s.level})` : '')),
+    ...ss.map(s => s.name + (showSkillLevel && s.level !== 'Hide' ? ` (${s.level})` : ''))
+  ];
+
+  return `
+    <div class="clean-wrapper">
+      <!-- HEADER: centered name block -->
+      <div class="clean-header">
+        <h1 class="clean-name" style="color: ${currentNameColor}">${cvData.name || 'YOUR NAME'}</h1>
+        ${titleLine ? `<div class="clean-title" style="color: ${currentAccentColor === '#2c5f8a' ? '#333' : currentAccentColor}">${titleLine}</div>` : ''}
+        ${contactItems.length > 0 ? `
+        <div class="clean-contacts">
+          ${contactItems.map((item, i) => `
+            <span class="clean-contact-item">${item}</span>
+            ${i < contactItems.length - 1 ? '<span class="clean-sep">|</span>' : ''}
+          `).join('')}
+        </div>` : ''}
+      </div>
+
+      <div class="clean-body">
+        <!-- PROFESSIONAL SUMMARY -->
+        ${cvData.summary ? `
+        <div class="clean-section">
+          <h2 class="clean-section-title">PROFESSIONAL SUMMARY</h2>
+          <p class="clean-summary">${cvData.summary}</p>
+        </div>` : ''}
+
+        <!-- WORK EXPERIENCE -->
+        ${cvData.experiences.length > 0 ? `
+        <div class="clean-section">
+          <h2 class="clean-section-title">${t.experience.toUpperCase()}</h2>
+          ${cvData.experiences.map(exp => `
+            <div class="clean-exp-item">
+              <div class="clean-exp-header">
+                <div>
+                  <div class="clean-exp-title">${exp.title || ''}</div>
+                  <div class="clean-exp-company">${getCompanyText(exp) || ''}</div>
+                </div>
+                <div class="clean-exp-date">${exp.date || ''}</div>
+              </div>
+              ${exp.bullets.length > 0 ? `
+              <ul class="clean-bullets">
+                ${exp.bullets.map(b => `<li>${b}</li>`).join('')}
+              </ul>` : ''}
+            </div>
+          `).join('')}
+        </div>` : ''}
+
+        <!-- EDUCATION -->
+        ${cvData.educations.length > 0 ? `
+        <div class="clean-section">
+          <h2 class="clean-section-title">${t.education.toUpperCase()}</h2>
+          ${cvData.educations.map(edu => `
+            <div class="clean-edu-item">
+              <div class="clean-exp-header">
+                <div>
+                  <div class="clean-exp-title">${edu.degree || ''}</div>
+                  <div class="clean-exp-company">${getSchoolText(edu) || ''}</div>
+                </div>
+                <div class="clean-exp-date">${edu.date || ''}</div>
+              </div>
+              ${edu.thesis ? `<div class="clean-thesis">${t.thesis}: "${edu.thesis}"</div>` : ''}
+            </div>
+          `).join('')}
+        </div>` : ''}
+
+        <!-- SKILLS -->
+        ${(hs.length > 0 || ss.length > 0) ? `
+        <div class="clean-section">
+          <h2 class="clean-section-title">${t.skills.toUpperCase()}</h2>
+          ${hs.length > 0 ? `
+          <ul class="clean-bullets">
+            <li><strong>${t.hardSkills}:</strong> ${hs.map(s => s.name + (showSkillLevel && s.level !== 'Hide' ? ` (${s.level})` : '')).join(', ')}</li>
+          </ul>` : ''}
+          ${ss.length > 0 ? `
+          <ul class="clean-bullets">
+            <li><strong>${t.softSkills}:</strong> ${ss.map(s => s.name + (showSkillLevel && s.level !== 'Hide' ? ` (${s.level})` : '')).join(', ')}</li>
+          </ul>` : ''}
+        </div>` : ''}
+
+
+        <!-- CERTIFICATIONS -->
+        ${cvData.certifications.length > 0 ? `
+        <div class="clean-section">
+          <h2 class="clean-section-title">${t.certifications.toUpperCase()}</h2>
+          <ul class="clean-bullets">
+            ${cvData.certifications.map(c => `<li>${c.name}${c.date ? ' — ' + c.date : ''}</li>`).join('')}
+          </ul>
+        </div>` : ''}
+
+        <!-- LANGUAGES -->
+        ${cvData.languages.length > 0 ? `
+        <div class="clean-section">
+          <h2 class="clean-section-title">${t.languages.toUpperCase()}</h2>
+          <ul class="clean-bullets">
+            ${cvData.languages.map(l => `<li>${l.name} — ${l.level}</li>`).join('')}
+          </ul>
+        </div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
 // Export to PDF
 function exportPDF() {
   const shouldSave = document.getElementById("autoSaveToggle") ? document.getElementById("autoSaveToggle").checked : true;
@@ -1499,6 +1648,28 @@ function exportPDF() {
     .tpl-executive .lang-level { color: #888; }
     .tpl-executive .cert-item { font-size: 11px; color: #333; margin-bottom: 5px; }
     .tpl-executive .cert-name { font-weight: 600; color: #111; }
+
+    /* ===== CLEAN TEMPLATE ===== */
+    .tpl-clean .clean-wrapper { padding: 40px 52px 44px; font-family: ${cvFont}, Arial, sans-serif; }
+    .tpl-clean .clean-header { text-align: center; margin-bottom: 20px; padding-bottom: 0; }
+    .tpl-clean .clean-name { font-size: 28px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: ${currentNameColor}; margin: 0 0 6px 0; }
+    .tpl-clean .clean-title { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px; }
+    .tpl-clean .clean-contacts { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 4px; font-size: 11.5px; color: #444; }
+    .tpl-clean .clean-contact-item { white-space: nowrap; }
+    .tpl-clean .clean-sep { color: #999; margin: 0 4px; }
+    .tpl-clean .clean-body { }
+    .tpl-clean .clean-section { margin-bottom: 16px; page-break-inside: avoid; }
+    .tpl-clean .clean-section-title { font-size: 13px; font-weight: 700; color: #111; text-transform: uppercase; border-bottom: 2px solid #111; padding-bottom: 3px; margin-bottom: 10px; margin-top: 0; letter-spacing: 0.5px; }
+    .tpl-clean .clean-summary { font-size: 12px; line-height: 1.65; color: #333; margin: 0; }
+    .tpl-clean .clean-exp-item { margin-bottom: 12px; }
+    .tpl-clean .clean-exp-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; }
+    .tpl-clean .clean-exp-title { font-size: 13px; font-weight: 700; color: #111; }
+    .tpl-clean .clean-exp-company { font-size: 12px; color: #444; font-weight: 600; margin-top: 1px; }
+    .tpl-clean .clean-exp-date { font-size: 11.5px; color: #555; white-space: nowrap; text-align: right; padding-left: 12px; }
+    .tpl-clean .clean-edu-item { margin-bottom: 12px; }
+    .tpl-clean .clean-bullets { margin: 5px 0 0 0; padding-left: 20px; }
+    .tpl-clean .clean-bullets li { font-size: 11.5px; line-height: 1.6; color: #333; margin-bottom: 3px; list-style-type: disc; }
+    .tpl-clean .clean-thesis { font-size: 11px; color: #666; font-style: italic; margin-top: 4px; }
   `;
   printElement.appendChild(styleElement);
   
